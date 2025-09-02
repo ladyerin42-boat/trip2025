@@ -1,102 +1,142 @@
-﻿<script>
-  const repoOwner = "ladyerin42-boat";
-  const repoName = "trip2025";
-  const filePath = "markers.json";
-  const branch = "main";
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marker Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    body { display: flex; margin: 0; font-family: Arial, sans-serif; }
+    #map { height: 100vh; width: 70%; }
+    #sidebar { width: 30%; padding: 10px; overflow-y: auto; border-left: 1px solid #ccc; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { border: 1px solid #ccc; padding: 5px; text-align: left; }
+    input { width: 95%; margin: 2px 0; }
+    button { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <!-- Load local config with PAT -->
+  <script src="config.js"></script>
 
-  // ⛔ Replace with your PAT
-  const token = "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";
+  <div id="map"></div>
+  <div id="sidebar">
+    <h3>Marker Editor</h3>
+    <button onclick="loadMarkers()">Load markers</button>
+    <button onclick="saveMarkers()">Save markers</button>
 
-  let markers = [];
-  let sha = "";
+    <h4>Add Marker</h4>
+    <label>Name: <input id="name"></label><br>
+    <label>Latitude: <input id="lat"></label><br>
+    <label>Longitude: <input id="lng"></label><br>
+    <label>Link: <input id="link"></label><br>
+    <button onclick="addMarker()">Add Marker</button>
 
-  // Initialize map
-  const map = L.map('map').setView([-20.2762, 148.7550], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-  }).addTo(map);
+    <h4>Existing Markers</h4>
+    <table>
+      <thead><tr><th>Name</th><th>Lat</th><th>Lng</th><th>Action</th></tr></thead>
+      <tbody id="markerTable"></tbody>
+    </table>
+  </div>
 
-  // Create a layer group to manage markers
-  const markerLayer = L.layerGroup().addTo(map);
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const repoOwner = "ladyerin42-boat";
+    const repoName = "trip2025";
+    const filePath = "markers.json";
+    const branch = "main";
 
-  // Add click handler to populate form
-  map.on('click', e => {
-    document.getElementById('lat').value = e.latlng.lat.toFixed(6);
-    document.getElementById('lng').value = e.latlng.lng.toFixed(6);
-  });
+    // Use PAT from config.js
+    const token = GITHUB_PAT;
 
-  async function loadMarkers() {
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `token ${token}` }
+    let markers = [];
+    let sha = "";
+
+    // Initialize map
+    const map = L.map('map').setView([-20.2762, 148.7550], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    // Layer group to avoid duplicate markers
+    const markerLayer = L.layerGroup().addTo(map);
+
+    // Populate form on map click
+    map.on('click', e => {
+      document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('lng').value = e.latlng.lng.toFixed(6);
     });
-    const data = await res.json();
-    sha = data.sha;
-    markers = JSON.parse(atob(data.content));
-    renderMarkers();
-  }
 
-  function renderMarkers() {
-    // clear table
-    document.getElementById('markerTable').innerHTML = "";
-
-    // clear map layer
-    markerLayer.clearLayers();
-
-    markers.forEach((m, i) => {
-      // table row
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${m.name}</td>
-        <td>${m.lat}</td>
-        <td>${m.lng}</td>
-        <td><button onclick="deleteMarker(${i})">Delete</button></td>
-      `;
-      document.getElementById('markerTable').appendChild(row);
-
-      // map marker
-      L.marker([m.lat, m.lng])
-        .addTo(markerLayer)
-        .bindPopup(`<a href="${m.link}" target="_blank">View</a>`);
-    });
-  }
-
-  function addMarker() {
-    const name = document.getElementById('name').value;
-    const lat = parseFloat(document.getElementById('lat').value);
-    const lng = parseFloat(document.getElementById('lng').value);
-    const link = document.getElementById('link').value;
-    if (!name || isNaN(lat) || isNaN(lng)) {
-      alert("Please enter name, lat, lng");
-      return;
+    async function loadMarkers() {
+      const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`;
+      const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
+      const data = await res.json();
+      sha = data.sha;
+      markers = JSON.parse(atob(data.content));
+      renderMarkers();
     }
-    markers.push({ name, lat, lng, link });
-    renderMarkers();
-  }
-   
-  function deleteMarker(i) {
-    markers.splice(i, 1);
-    renderMarkers();
-  }
 
-  async function saveMarkers() {
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
-    const content = btoa(JSON.stringify(markers, null, 2));
-    const res = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "Update markers.json via editor",
-        content: content,
-        sha: sha,
-        branch: branch
-      })
-    });
-    const data = await res.json();
-    alert("Saved to GitHub!");
-    sha = data.content.sha;
-  }
-</script>
+    function renderMarkers() {
+      // Clear table
+      document.getElementById('markerTable').innerHTML = "";
+      // Clear map layer
+      markerLayer.clearLayers();
+
+      markers.forEach((m, i) => {
+        // Table row
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${m.name}</td>
+          <td>${m.lat}</td>
+          <td>${m.lng}</td>
+          <td><button onclick="deleteMarker(${i})">Delete</button></td>
+        `;
+        document.getElementById('markerTable').appendChild(row);
+
+        // Map marker
+        L.marker([m.lat, m.lng])
+          .addTo(markerLayer)
+          .bindPopup(`<a href="${m.link}" target="_blank">View</a>`);
+      });
+    }
+
+    function addMarker() {
+      const name = document.getElementById('name').value;
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lng = parseFloat(document.getElementById('lng').value);
+      const link = document.getElementById('link').value;
+      if (!name || isNaN(lat) || isNaN(lng)) {
+        alert("Please enter name, lat, lng");
+        return;
+      }
+      markers.push({ name, lat, lng, link });
+      renderMarkers();
+    }
+
+    function deleteMarker(i) {
+      markers.splice(i, 1);
+      renderMarkers();
+    }
+
+    async function saveMarkers() {
+      const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
+      const content = btoa(JSON.stringify(markers, null, 2));
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Update markers.json via editor",
+          content: content,
+          sha: sha,
+          branch: branch
+        })
+      });
+      const data = await res.json();
+      alert("Saved to GitHub!");
+      sha = data.content.sha;
+    }
+  </script>
+</body>
+</html>
