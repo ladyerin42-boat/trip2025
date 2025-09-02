@@ -1,2 +1,5 @@
 # Ignore local config with PAT
 config.js
+
+# Ignore README
+README.txt
