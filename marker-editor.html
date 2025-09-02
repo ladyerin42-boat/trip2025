@@ -1,125 +1,102 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Marker Editor</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <style>
-    body { margin:0; padding:0; display:flex; height:100vh; font-family: Arial, sans-serif; }
-    #map { flex:2; }
-    #sidebar { flex:1; padding:10px; overflow:auto; border-left: 1px solid #ccc; }
-    table { width:100%; border-collapse: collapse; margin-top: 10px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 6px; text-align: left; }
-    input[type="text"] { width: 95%; }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <div id="sidebar">
-    <h2>Marker Editor</h2>
-    <form id="markerForm">
-      <label>Title: <input type="text" id="title" required></label><br>
-      <label>Link: <input type="text" id="link" required></label><br>
-      <label>Latitude: <input type="text" id="lat" required></label><br>
-      <label>Longitude: <input type="text" id="lng" required></label><br>
-      <button type="submit">Add Marker</button>
-    </form>
-    <button id="downloadBtn">Download markers.json</button>
-    <h3>Current Markers</h3>
-    <table id="markerTable">
-      <thead><tr><th>Title</th><th>Link</th><th>Lat</th><th>Lng</th><th>Delete</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+﻿<script>
+  const repoOwner = "ladyerin42-boat";
+  const repoName = "trip2025";
+  const filePath = "markers.json";
+  const branch = "main";
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    let map = L.map('map').setView([-20.28, 148.92], 9); // Whitsundays area
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+  // ⛔ Replace with your PAT
+  const token = "YOUR_PAT_HERE";
 
-    let markers = [];
+  let markers = [];
+  let sha = "";
 
-    // Load existing markers.json
-    fetch('markers.json')
-      .then(res => res.json())
-      .then(data => {
-        markers = data;
-        refreshTable();
-        renderMarkers();
+  // Initialize map
+  const map = L.map('map').setView([-20.2762, 148.7550], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  // Create a layer group to manage markers
+  const markerLayer = L.layerGroup().addTo(map);
+
+  // Add click handler to populate form
+  map.on('click', e => {
+    document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+    document.getElementById('lng').value = e.latlng.lng.toFixed(6);
+  });
+
+  async function loadMarkers() {
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `token ${token}` }
+    });
+    const data = await res.json();
+    sha = data.sha;
+    markers = JSON.parse(atob(data.content));
+    renderMarkers();
+  }
+
+  function renderMarkers() {
+    // clear table
+    document.getElementById('markerTable').innerHTML = "";
+
+    // clear map layer
+    markerLayer.clearLayers();
+
+    markers.forEach((m, i) => {
+      // table row
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${m.name}</td>
+        <td>${m.lat}</td>
+        <td>${m.lng}</td>
+        <td><button onclick="deleteMarker(${i})">Delete</button></td>
+      `;
+      document.getElementById('markerTable').appendChild(row);
+
+      // map marker
+      L.marker([m.lat, m.lng])
+        .addTo(markerLayer)
+        .bindPopup(`<a href="${m.link}" target="_blank">View</a>`);
+    });
+  }
+
+  function addMarker() {
+    const name = document.getElementById('name').value;
+    const lat = parseFloat(document.getElementById('lat').value);
+    const lng = parseFloat(document.getElementById('lng').value);
+    const link = document.getElementById('link').value;
+    if (!name || isNaN(lat) || isNaN(lng)) {
+      alert("Please enter name, lat, lng");
+      return;
+    }
+    markers.push({ name, lat, lng, link });
+    renderMarkers();
+  }
+
+  function deleteMarker(i) {
+    markers.splice(i, 1);
+    renderMarkers();
+  }
+
+  async function saveMarkers() {
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
+    const content = btoa(JSON.stringify(markers, null, 2));
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Update markers.json via editor",
+        content: content,
+        sha: sha,
+        branch: branch
       })
-      .catch(() => console.log("No markers.json found yet"));
-
-    // Click on map populates lat/lng fields
-    map.on('click', function(e) {
-      document.getElementById('lat').value = e.latlng.lat.toFixed(6);
-      document.getElementById('lng').value = e.latlng.lng.toFixed(6);
     });
-
-    // Add new marker
-    document.getElementById('markerForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const newMarker = {
-        title: document.getElementById('title').value,
-        link: document.getElementById('link').value,
-        lat: parseFloat(document.getElementById('lat').value),
-        lng: parseFloat(document.getElementById('lng').value)
-      };
-      markers.push(newMarker);
-      refreshTable();
-      renderMarkers();
-      this.reset();
-    });
-
-    // Refresh table
-    function refreshTable() {
-      const tbody = document.querySelector('#markerTable tbody');
-      tbody.innerHTML = '';
-      markers.forEach((m, i) => {
-        let row = `<tr>
-          <td>${m.title}</td>
-          <td><a href="${m.link}" target="_blank">View</a></td>
-          <td>${m.lat}</td>
-          <td>${m.lng}</td>
-          <td><button onclick="deleteMarker(${i})">Delete</button></td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    }
-
-    // Render markers on map
-    function renderMarkers() {
-      if (window.currentLayer) {
-        map.removeLayer(window.currentLayer);
-      }
-      window.currentLayer = L.layerGroup();
-      markers.forEach(m => {
-        L.marker([m.lat, m.lng])
-          .bindPopup(`<b>${m.title}</b><br><a href="${m.link}" target="_blank">View</a>`)
-          .addTo(window.currentLayer);
-      });
-      window.currentLayer.addTo(map);
-    }
-
-    // Delete marker
-    function deleteMarker(index) {
-      markers.splice(index, 1);
-      refreshTable();
-      renderMarkers();
-    }
-
-    // Download updated markers.json
-    document.getElementById('downloadBtn').addEventListener('click', function() {
-      const blob = new Blob([JSON.stringify(markers, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "markers.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  </script>
-</body>
-</html>
+    const data = await res.json();
+    alert("Saved to GitHub!");
+    sha = data.content.sha;
+  }
+</script>
