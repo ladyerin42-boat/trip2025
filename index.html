@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Leaflet: Clickable Markers with Links</title>
+  <title>Lady Erin Trip North 2025</title>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -33,19 +33,17 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Define markers with coordinates and URLs
-    var markers = [
-      { coords: [-20.2431, 148.8248], url: 'https://www.facebook.com/share/p/15xJZ6VNKC/' },
-      { coords: [-20.3500, 148.9330], url: 'https://www.facebook.com/share/p/15xJZ6VNKC/' },
-      { coords: [-20.3500, 148.9500], url: 'https://www.facebook.com/share/p/15xJZ6VNKC/' }
-    ];
-
-    // Add each marker and make it clickable
-    markers.forEach(function(m) {
-      L.marker(m.coords).addTo(map).on('click', function() {
-        window.open(m.url, '_blank');
-      });
-    });
+    // Load markers from JSON
+    fetch('markers.json')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(m => {
+          L.marker([m.lat, m.lng])
+            .addTo(map)
+            .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">Link</a>`);
+        });
+      })
+      .catch(error => console.error('Error loading markers:', error));
   </script>
 </body>
 </html>
