@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Leaflet: Clickable Markers with Links</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([0, 0], 2);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Define markers with coordinates and URLs
+    var markers = [
+      { coords: [51.505, -0.09], url: 'https://example.com/one' },
+      { coords: [48.8566, 2.3522], url: 'https://example.com/two' },
+      { coords: [40.7128, -74.0060], url: 'https://example.com/three' }
+    ];
+
+    // Add each marker and make it clickable
+    markers.forEach(function(m) {
+      L.marker(m.coords).addTo(map).on('click', function() {
+        window.open(m.url, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>
