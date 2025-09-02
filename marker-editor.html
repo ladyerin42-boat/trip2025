@@ -1,123 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Whitsundays Marker Editor</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset="utf-8" />
+  <title>Marker Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    body { margin:0; display:flex; height:100vh; font-family: Arial, sans-serif; }
-    #map { flex: 2; }
-    #sidebar { flex: 1; padding:10px; overflow:auto; background:#f0f0f0; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { border:1px solid #ccc; padding:4px; text-align:center; }
-    button { cursor:pointer; }
-    input { width: 95%; margin-bottom: 5px; padding: 2px; }
+    body { margin:0; padding:0; display:flex; height:100vh; font-family: Arial, sans-serif; }
+    #map { flex:2; }
+    #sidebar { flex:1; padding:10px; overflow:auto; border-left: 1px solid #ccc; }
+    table { width:100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 6px; text-align: left; }
+    input[type="text"] { width: 95%; }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="sidebar">
-    <h2>Markers</h2>
+    <h2>Marker Editor</h2>
     <form id="markerForm">
-      <input type="text" id="name" placeholder="Name" required><br>
-      <input type="text" id="lat" placeholder="Latitude" required><br>
-      <input type="text" id="lng" placeholder="Longitude" required><br>
-      <input type="text" id="url" placeholder="URL"><br>
+      <label>Title: <input type="text" id="title" required></label><br>
+      <label>Link: <input type="text" id="link" required></label><br>
+      <label>Latitude: <input type="text" id="lat" required></label><br>
+      <label>Longitude: <input type="text" id="lng" required></label><br>
       <button type="submit">Add Marker</button>
     </form>
-
+    <button id="downloadBtn">Download markers.json</button>
+    <h3>Current Markers</h3>
     <table id="markerTable">
-      <thead>
-        <tr><th>Name</th><th>Lat</th><th>Lng</th><th>URL</th><th>Delete</th></tr>
-      </thead>
+      <thead><tr><th>Title</th><th>Link</th><th>Lat</th><th>Lng</th><th>Delete</th></tr></thead>
       <tbody></tbody>
     </table>
-
-    <button id="downloadBtn">Download JSON</button>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Initialize map
-    var map = L.map('map').setView([-20.2791, 148.9141], 12);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    let map = L.map('map').setView([-20.28, 148.92], 9); // Whitsundays area
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    var markers = []; // in-memory array of marker objects
+    let markers = [];
 
-    // Add a marker to map and store the Leaflet marker
-    function addMarkerToMap(markerData) {
-      var marker = L.marker([markerData.lat, markerData.lng]).addTo(map)
-        .bindPopup(`<b>${markerData.name}</b><br><a href="${markerData.url}" target="_blank">View</a>`);
-      markerData.leafletMarker = marker;
-    }
+    // Load existing markers.json
+    fetch('markers.json')
+      .then(res => res.json())
+      .then(data => {
+        markers = data;
+        refreshTable();
+        renderMarkers();
+      })
+      .catch(() => console.log("No markers.json found yet"));
 
-    // Refresh table display
+    // Click on map populates lat/lng fields
+    map.on('click', function(e) {
+      document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('lng').value = e.latlng.lng.toFixed(6);
+    });
+
+    // Add new marker
+    document.getElementById('markerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const newMarker = {
+        title: document.getElementById('title').value,
+        link: document.getElementById('link').value,
+        lat: parseFloat(document.getElementById('lat').value),
+        lng: parseFloat(document.getElementById('lng').value)
+      };
+      markers.push(newMarker);
+      refreshTable();
+      renderMarkers();
+      this.reset();
+    });
+
+    // Refresh table
     function refreshTable() {
       const tbody = document.querySelector('#markerTable tbody');
       tbody.innerHTML = '';
       markers.forEach((m, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${m.name}</td>
+        let row = `<tr>
+          <td>${m.title}</td>
+          <td><a href="${m.link}" target="_blank">View</a></td>
           <td>${m.lat}</td>
           <td>${m.lng}</td>
-          <td>${m.url}</td>
           <td><button onclick="deleteMarker(${i})">Delete</button></td>
-        `;
-        tbody.appendChild(row);
+        </tr>`;
+        tbody.innerHTML += row;
       });
+    }
+
+    // Render markers on map
+    function renderMarkers() {
+      if (window.currentLayer) {
+        map.removeLayer(window.currentLayer);
+      }
+      window.currentLayer = L.layerGroup();
+      markers.forEach(m => {
+        L.marker([m.lat, m.lng])
+          .bindPopup(`<b>${m.title}</b><br><a href="${m.link}" target="_blank">View</a>`)
+          .addTo(window.currentLayer);
+      });
+      window.currentLayer.addTo(map);
     }
 
     // Delete marker
     function deleteMarker(index) {
-      map.removeLayer(markers[index].leafletMarker);
-      markers.splice(index,1);
+      markers.splice(index, 1);
       refreshTable();
+      renderMarkers();
     }
 
-    // Handle form submission
-    document.getElementById('markerForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const newMarker = {
-        name: document.getElementById('name').value,
-        lat: parseFloat(document.getElementById('lat').value),
-        lng: parseFloat(document.getElementById('lng').value),
-        url: document.getElementById('url').value
-      };
-      markers.push(newMarker);
-      addMarkerToMap(newMarker);
-      refreshTable();
-      this.reset();
+    // Download updated markers.json
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      const blob = new Blob([JSON.stringify(markers, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "markers.json";
+      a.click();
+      URL.revokeObjectURL(url);
     });
-
-    // Fill lat/lng on map click
-    map.on('click', function(e){
-      document.getElementById('lat').value = e.latlng.lat.toFixed(5);
-      document.getElementById('lng').value = e.latlng.lng.toFixed(5);
-    });
-
-    // Download markers as JSON
-    document.getElementById('downloadBtn').addEventListener('click', function(){
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(markers, null, 2));
-      const dlAnchor = document.createElement('a');
-      dlAnchor.setAttribute("href", dataStr);
-      dlAnchor.setAttribute("download", "markers.json");
-      dlAnchor.click();
-    });
-
-    // Load existing markers.json
-    fetch('markers.json?v=' + new Date().getTime())
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(m => {
-          markers.push(m);
-          addMarkerToMap(m);
-        });
-        refreshTable();
-      })
-      .catch(err => console.warn('Could not load markers.json. Starting with empty list.'));
   </script>
 </body>
 </html>
