@@ -40,7 +40,7 @@
         data.forEach(m => {
           L.marker([m.lat, m.lng])
             .addTo(map)
-            .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">Link</a>`);
+            .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
         });
       })
       .catch(error => console.error('Error loading markers:', error));
