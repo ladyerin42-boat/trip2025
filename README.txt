@@ -22,4 +22,4 @@ https://ladyerin42-boat.github.io/trip2025/
 
 Technical
 
-See config.js for auth
+See config.js for auth 
