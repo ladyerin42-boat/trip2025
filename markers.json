@@ -7,14 +7,224 @@
   },
   {
     "name": "Dent Island",
-    "lat": -20.3500,
-    "lng": 148.9330,
+    "lat": -20.35,
+    "lng": 148.933,
     "url": "https://www.facebook.com/share/p/15xJZ6VNKC/"
   },
   {
     "name": "Nara Inlet",
-    "lat": -20.3500,
-    "lng": 148.9500,
+    "lat": -20.35,
+    "lng": 148.95,
     "url": "https://www.facebook.com/share/p/15xJZ6VNKC/"
+  },
+  {
+    "name": "Random",
+    "lat": -20.165544,
+    "lng": 148.862407,
+    "link": "test"
+  },
+  {
+    "name": "Bulwer",
+    "lat": -27.071355,
+    "lng": 153.360149,
+    "link": ""
+  },
+  {
+    "name": "Double Island Point",
+    "lat": -25.924084,
+    "lng": 153.148238,
+    "link": ""
+  },
+  {
+    "name": "Wide Bay Bar Crossing",
+    "lat": -25.814727,
+    "lng": 153.067411,
+    "link": ""
+  },
+  {
+    "name": "Gary's Anchorage",
+    "lat": -25.63905,
+    "lng": 152.963432,
+    "link": ""
+  },
+  {
+    "name": "Burnett Heads Anchorage",
+    "lat": -24.755016,
+    "lng": 152.40254,
+    "link": ""
+  },
+  {
+    "name": "Bustard Heads / Pancake Creek",
+    "lat": -24.032511,
+    "lng": 151.740528,
+    "link": ""
+  },
+  {
+    "name": "South Narrows",
+    "lat": -23.703323,
+    "lng": 151.126312,
+    "link": ""
+  },
+  {
+    "name": "Great Keppel",
+    "lat": -23.173347,
+    "lng": 150.933487,
+    "link": ""
+  },
+  {
+    "name": "North Keppel",
+    "lat": -23.065558,
+    "lng": 150.888689,
+    "link": ""
+  },
+  {
+    "name": "Island Head Creek",
+    "lat": -22.38373,
+    "lng": 150.650908,
+    "link": ""
+  },
+  {
+    "name": "Hexham Island",
+    "lat": -22.013048,
+    "lng": 150.364006,
+    "link": ""
+  },
+  {
+    "name": "Middle Percy Island",
+    "lat": -21.6534,
+    "lng": 150.244701,
+    "link": ""
+  },
+  {
+    "name": "Curlew Island",
+    "lat": -21.594554,
+    "lng": 149.796058,
+    "link": ""
+  },
+  {
+    "name": "Mackay Marina",
+    "lat": -21.111946,
+    "lng": 149.227387,
+    "link": ""
+  },
+  {
+    "name": "Brampton Island",
+    "lat": -20.799448,
+    "lng": 149.265173,
+    "link": ""
+  },
+  {
+    "name": "Goldsmith Island",
+    "lat": -20.670211,
+    "lng": 149.150253,
+    "link": ""
+  },
+  {
+    "name": "Thomas Island",
+    "lat": -20.540382,
+    "lng": 149.109884,
+    "link": ""
+  },
+  {
+    "name": "Shaw Island",
+    "lat": -20.500913,
+    "lng": 149.063695,
+    "link": ""
+  },
+  {
+    "name": "South Molle Island",
+    "lat": -20.257688,
+    "lng": 148.84054,
+    "link": ""
+  },
+  {
+    "name": "Double Bay",
+    "lat": -20.190357,
+    "lng": 148.625581,
+    "link": ""
+  },
+  {
+    "name": "Jonah Bay",
+    "lat": -20.074736,
+    "lng": 148.544506,
+    "link": ""
+  },
+  {
+    "name": "Gloucester Island National Park",
+    "lat": -20.035774,
+    "lng": 148.437757,
+    "link": ""
+  },
+  {
+    "name": "Cape Gloucester ",
+    "lat": -20.066735,
+    "lng": 148.440847,
+    "link": ""
+  },
+  {
+    "name": "Shark Bay, Bowen",
+    "lat": -19.981173,
+    "lng": 148.254453,
+    "link": ""
+  },
+  {
+    "name": "Shark Bay, Cape Upstart",
+    "lat": -19.729867,
+    "lng": 147.751417,
+    "link": ""
+  },
+  {
+    "name": "Cape Cleveland",
+    "lat": -19.225583,
+    "lng": 146.993027,
+    "link": ""
+  },
+  {
+    "name": "Townsville Marina",
+    "lat": -19.25268,
+    "lng": 146.822792,
+    "link": ""
+  },
+  {
+    "name": "Horseshoe Bay, Magnetic Island",
+    "lat": -19.110623,
+    "lng": 146.85513,
+    "link": ""
+  },
+  {
+    "name": "John Brewer Reef",
+    "lat": -18.62152,
+    "lng": 147.05959,
+    "link": ""
+  },
+  {
+    "name": "Walker Reef",
+    "lat": -18.306618,
+    "lng": 146.764974,
+    "link": ""
+  },
+  {
+    "name": "Brammo Bay, Dunk Island",
+    "lat": -17.932897,
+    "lng": 146.141124,
+    "link": ""
+  },
+  {
+    "name": "Goold Island",
+    "lat": -18.168198,
+    "lng": 146.14993,
+    "link": ""
+  },
+  {
+    "name": "Garden Island",
+    "lat": -18.182225,
+    "lng": 146.142547,
+    "link": ""
+  },
+  {
+    "name": "Scraggy Point, Hinchinbrook Island",
+    "lat": -18.289912,
+    "lng": 146.099967,
+    "link": ""
   }
 ]
