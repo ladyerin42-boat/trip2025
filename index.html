@@ -42,7 +42,7 @@
     }).addTo(map);
 
     // Load markers from JSON
-    fetch('markers.json')
+    fetch('markers.json?nocache=')
       .then(response => response.json())
       .then(data => {
         data.forEach(m => {
