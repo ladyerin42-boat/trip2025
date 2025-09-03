@@ -1,117 +1,139 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
   <title>Marker Editor</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { display: flex; margin: 0; font-family: Arial, sans-serif; }
-    #map { height: 100vh; width: 70%; }
-    #sidebar { width: 30%; padding: 10px; overflow-y: auto; border-left: 1px solid #ccc; }
-    table { width: 100%; border-collapse: collapse; }
-    td, th { border: 1px solid #ccc; padding: 5px; text-align: left; }
-    input { width: 95%; margin: 2px 0; }
-    button { margin: 5px 0; }
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+    #map {
+      flex: 2;
+    }
+    #sidebar {
+      flex: 1;
+      padding: 10px;
+      border-left: 1px solid #ccc;
+      overflow-y: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 5px;
+      text-align: left;
+    }
+    input, button {
+      margin: 5px 0;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="sidebar">
-    <h3>Marker Editor</h3>
-    <button onclick="loadMarkers()">Load markers</button>
-    <button onclick="saveMarkers()">Save markers</button>
-
-    <h4>Add Marker</h4>
-    <label>Name: <input id="name"></label><br>
-    <label>Latitude: <input id="lat"></label><br>
-    <label>Longitude: <input id="lng"></label><br>
-    <label>Link: <input id="link"></label><br>
+    <h3>Add Marker</h3>
+    <label>Name: <input type="text" id="name"></label><br>
+    <label>Latitude: <input type="text" id="lat"></label><br>
+    <label>Longitude: <input type="text" id="lng"></label><br>
+    <label>URL: <input type="text" id="url"></label><br>
     <button onclick="addMarker()">Add Marker</button>
 
-    <h4>Existing Markers</h4>
-    <table>
-      <thead><tr><th>Name</th><th>Lat</th><th>Lng</th><th>Action</th></tr></thead>
-      <tbody id="markerTable"></tbody>
+    <h3>Current Markers</h3>
+    <table id="markerTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>URL</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
     </table>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    let markers = [];
-    const markerLayer = L.layerGroup();
-
-    // Initialize map
-    const map = L.map('map').setView([-20.2762, 148.7550], 10);
+    let map = L.map('map').setView([-20.2762, 148.7550], 10); // Whitsundays center
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
+      attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    markerLayer.addTo(map);
 
-    // Populate form when clicking on map
-    map.on('click', e => {
+    let markers = [];
+
+    // Clicking the map pre-populates the lat/lng fields
+    map.on('click', function(e) {
       document.getElementById('lat').value = e.latlng.lat.toFixed(6);
       document.getElementById('lng').value = e.latlng.lng.toFixed(6);
     });
 
-    async function loadMarkers() {
-      const res = await fetch("markers.json");
-      markers = await res.json();
-      renderMarkers();
-    }
-
-    function renderMarkers() {
-      document.getElementById('markerTable').innerHTML = "";
-      markerLayer.clearLayers();
-
-      markers.forEach((m, i) => {
-        // Table
-        const row = document.createElement('tr');
-        row.innerHTML = `
+    function refreshTable() {
+      const tbody = document.querySelector('#markerTable tbody');
+      tbody.innerHTML = '';
+      markers.forEach((m, index) => {
+        const row = `<tr>
           <td>${m.name}</td>
           <td>${m.lat}</td>
           <td>${m.lng}</td>
-          <td><button onclick="deleteMarker(${i})">Delete</button></td>
-        `;
-        document.getElementById('markerTable').appendChild(row);
-
-        // Map marker
-        L.marker([m.lat, m.lng])
-          .addTo(markerLayer)
-          .bindPopup(`<a href="${m.link}" target="_blank">View</a>`);
+          <td><a href="${m.url}" target="_blank">View</a></td>
+          <td><button onclick="deleteMarker(${index})">Delete</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
       });
     }
 
     function addMarker() {
       const name = document.getElementById('name').value;
-      const lat = parseFloat(document.getElementById('lat').value);
-      const lng = parseFloat(document.getElementById('lng').value);
-      const link = document.getElementById('link').value;
+      const lat = document.getElementById('lat').value;
+      const lng = document.getElementById('lng').value;
+      const url = document.getElementById('url').value;
 
-      if (!name || isNaN(lat) || isNaN(lng)) {
-        alert("Please enter name, lat, lng");
+      if (!name || !lat || !lng || !url) {
+        alert('Please fill all fields');
         return;
       }
 
-      markers.push({ name, lat, lng, link });
-      renderMarkers();
+      const newMarker = {
+        name,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        url   // ✅ standardized field
+      };
+
+      markers.push(newMarker);
+      L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b><br><a href="${url}" target="_blank">View</a>`);
+      refreshTable();
+
+      // Clear inputs
+      document.getElementById('name').value = '';
+      document.getElementById('lat').value = '';
+      document.getElementById('lng').value = '';
+      document.getElementById('url').value = '';
     }
 
-    function deleteMarker(i) {
-      markers.splice(i, 1);
-      renderMarkers();
-    }
-
-    async function saveMarkers() {
-      await fetch("markers.json", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(markers, null, 2)
+    function deleteMarker(index) {
+      markers.splice(index, 1);
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
+        }
       });
-      alert("Markers saved!");
+      // re-add all markers
+      markers.forEach(m => {
+        L.marker([m.lat, m.lng]).addTo(map).bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
+      });
+      refreshTable();
     }
 
-    // Auto-load on page load
-    window.onload = loadMarkers;
+    refreshTable();
   </script>
 </body>
 </html>
