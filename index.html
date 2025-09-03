@@ -1,58 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Lady Erin Trip North 2025</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    crossorigin=""
-  /> 
-  <style>
-    #map { height: 100vh; }
-  </style>
+<meta charset="UTF-8">
+<title>Marker Viewer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
+  body { margin:0; display:flex; height:100vh; font-family: Arial, sans-serif; }
+  #map { flex: 2; }
+  #sidebar { flex: 1; padding:10px; border-left:1px solid #ccc; overflow-y:auto; }
+  table { width:100%; border-collapse: collapse; margin-top:10px; }
+  th, td { border:1px solid #ccc; padding:5px; text-align:left; }
+</style>
 </head>
 <body>
-  <div id="map"></div>
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    crossorigin=""
-  ></script>
-  <script>
 
-    // Custom icon for markers
-      const shipIcon = L.icon({
-      iconUrl: 'marker.png',   // path to your ship image
-      iconSize: [32, 32],    // size of the icon
-      iconAnchor: [16, 32],  // point of the icon which will correspond to marker's location
-      popupAnchor: [0, -32]  // point from which the popup should open relative to iconAnchor
-    });
-    
-    // Set the initial center (lat, lng) and zoom level
-    var initialLat = -20.2791;    // replace with your latitude
-    var initialLng = 148.9141;    // replace with your longitude
-    var initialZoom = 12;        // replace with your desired zoom level (e.g., 2–18)
-  
-    // Initialize the map
-    var map = L.map('map').setView([initialLat, initialLng], initialZoom);
+<div id="map"></div>
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+<div id="sidebar">
+  <h3>Marker Collection</h3>
+  <label for="markerSet">Select Marker Set:</label>
+  <select id="markerSet" onchange="loadMarkers()">
+    <option value="markers.json">Default</option>
+    <option value="whitsundays.json">Whitsundays</option>
+    <option value="other.json">Other</option>
+  </select>
 
-    // Load markers from JSON
-    fetch('markers.json?nocache=')
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(m => {
-          L.marker([m.lat, m.lng], { icon: shipIcon })
-            .addTo(map)
-            .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
-        });
-      })
-      .catch(error => console.error('Error loading markers:', error));
-  </script>
+  <h3>Markers Table</h3>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Lat</th><th>Lng</th><th>URL</th></tr>
+    </thead>
+    <tbody id="markerTable"></tbody>
+  </table>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let map = L.map('map').setView([-20.2762,148.7550],10);
+
+// OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+const markerLayer = L.layerGroup().addTo(map);
+
+// Ship icon
+const shipIcon = L.icon({
+  iconUrl: 'ship.png',
+  iconSize: [32,32],
+  iconAnchor: [16,32],
+  popupAnchor: [0,-32]
+});
+
+let markers = [];
+
+// Load markers from selected file
+async function loadMarkers() {
+  const select = document.getElementById('markerSet');
+  const file = select.value;
+
+  markerLayer.clearLayers();
+  markers = [];
+
+  try {
+    const res = await fetch(file + '?nocache=' + new Date().getTime());
+    markers = await res.json();
+  } catch(e) {
+    alert('Failed to load markers: ' + e);
+    return;
+  }
+
+  markers.forEach(m => {
+    L.marker([m.lat, m.lng], { icon: shipIcon })
+      .addTo(markerLayer)
+      .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
+  });
+
+  refreshTable();
+}
+
+// Update sidebar table
+function refreshTable() {
+  const tbody = document.getElementById('markerTable');
+  tbody.innerHTML = '';
+  markers.forEach(m => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${m.name}</td>
+      <td>${m.lat}</td>
+      <td>${m.lng}</td>
+      <td><a href="${m.url}" target="_blank">View</a></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// Load default set on page load
+window.onload = loadMarkers;
+</script>
+
 </body>
 </html>
- 
