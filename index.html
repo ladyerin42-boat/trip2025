@@ -19,6 +19,14 @@
     crossorigin=""
   ></script>
   <script>
+
+    // Custom icon for markers
+      const shipIcon = L.icon({
+      iconUrl: 'marker.png',   // path to your ship image
+      iconSize: [32, 32],    // size of the icon
+      iconAnchor: [16, 32],  // point of the icon which will correspond to marker's location
+      popupAnchor: [0, -32]  // point from which the popup should open relative to iconAnchor
+    });
     
     // Set the initial center (lat, lng) and zoom level
     var initialLat = -20.2791;    // replace with your latitude
@@ -38,7 +46,7 @@
       .then(response => response.json())
       .then(data => {
         data.forEach(m => {
-          L.marker([m.lat, m.lng])
+          L.marker([m.lat, m.lng], { icon: shipIcon })
             .addTo(map)
             .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
         });
