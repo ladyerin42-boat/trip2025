@@ -41,26 +41,53 @@
     "name": "South Narrows",
     "lat": -23.703323,
     "lng": 151.126312,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/1bk9MDB4Ps/"
   },
   {
     "name": "Great Keppel",
     "lat": -23.173347,
     "lng": 150.933487,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/16q2qXs39a/"
   },
+
+  {
+    "name": "Approaching Great Keppel",
+    "lat": -23.188653,
+    "lng": 150.929189,
+    "url": "https://www.facebook.com/share/v/16rskvwCKx/"
+  },
+
   {
     "name": "North Keppel",
     "lat": -23.065558,
     "lng": 150.888689,
     "url": "https://www.facebook.com/share/p/17HPqWdwd3/"
   },
+
+
+  {
+    "name": "En-route near Port Clinton",
+    "lat": -22.460057,
+    "lng": 150.763498,
+    "url": "https://www.facebook.com/share/p/1ALfZMg6Wi/"
+  },
+
   {
     "name": "Pearl Bay",
     "lat": -22.443875,
     "lng": 150.733965,
     "url": "https://www.facebook.com/share/v/1AwaGiMV7M/"
   },
+
+    {
+    "name": "Pearl Bay",
+    "lat": -22.441654,
+    "lng": 150.745469,
+    "url": "https://www.facebook.com/share/v/1YifHBiRRu/"
+  },
+
+
+
   {
     "name": "Island Head Creek",
     "lat": -22.38373,
