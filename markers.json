@@ -45,19 +45,19 @@
     "name": "Gary's Anchorage",
     "lat": -25.63905,
     "lng": 152.963432,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/17WoPCuYfg/"
   },
   {
     "name": "Burnett Heads Anchorage",
     "lat": -24.755016,
     "lng": 152.40254,
-    "url": ""
+    "url": "https://www.facebook.com/share/v/1Gti3n3u16/"
   },
   {
     "name": "Bustard Heads / Pancake Creek",
     "lat": -24.032511,
     "lng": 151.740528,
-    "url": ""
+    "url": "https://www.facebook.com/share/r/1BBPSTjC72/"
   },
   {
     "name": "South Narrows",
@@ -75,19 +75,19 @@
     "name": "North Keppel",
     "lat": -23.065558,
     "lng": 150.888689,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/17HPqWdwd3/"
   },
   {
     "name": "Island Head Creek",
     "lat": -22.38373,
     "lng": 150.650908,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/1CPvExVjzs/"
   },
   {
     "name": "Hexham Island",
     "lat": -22.013048,
     "lng": 150.364006,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/16xEqKbksW/"
   },
   {
     "name": "Middle Percy Island",
@@ -123,7 +123,7 @@
     "name": "Thomas Island",
     "lat": -20.540382,
     "lng": 149.109884,
-    "url": ""
+    "url": "https://www.facebook.com/share/p/1FZyZfrajB/"
   },
   {
     "name": "Shaw Island",
@@ -190,6 +190,12 @@
     "lat": -19.110623,
     "lng": 146.85513,
     "url": "https://www.facebook.com/share/r/1CcPq18jGD/"
+  },
+  {
+    "name": "Horseshoe Bay, Magnetic Island",
+    "lat": -19.106162,
+    "lng": 146.853737,
+    "url": "https://www.facebook.com/share/p/16685XFEgi/"
   },
   {
     "name": "John Brewer Reef",
