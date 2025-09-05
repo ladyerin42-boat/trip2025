@@ -68,6 +68,11 @@ https://ladyerin42-boat.github.io/trip2025/
 
 Try CTRL-SHIFT-R to force the browser to request a new version of the page (not use cache)
 
-# CHanges
+OR try
+
+https://ladyerin42-boat.github.io/trip2025/index.html?nocache=1
+
+
+# Changes
 
 Working on a version of index.html that allows the user to select a marker.json file (representing separate trips)

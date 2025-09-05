@@ -1,69 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Map Viewer</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    #map {
-      flex: 1;
-      height: 70vh; /* Map takes 70% of screen height */
-      width: 100%;
-    }
-    #controls {
-      padding: 10px;
-      background: #f9f9f9;
-      border-bottom: 1px solid #ccc;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      text-align: left;
-    }
-  </style>
+<meta charset="utf-8" />
+<title>Marker Viewer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
+  body { margin:0; font-family: Arial, sans-serif; display:flex; flex-direction:column; height:100vh; }
+  #controls { padding:10px; background:#f7f7f7; border-bottom:1px solid #ddd; }
+  #map { flex:1; height: 70vh; }
+  #table-container { padding:10px; height: 30vh; overflow:auto; background:#fff; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { border:1px solid #ccc; padding:6px; text-align:left; }
+</style>
 </head>
 <body>
-  <div id="controls">
-    <label for="jsonFile">Choose marker file:</label>
-    <select id="jsonFile">
-      <option value="markers.json">markers.json</option>
-      <option value="markers2.json">markers2.json</option>
-      <option value="markers3.json">markers3.json</option>
-    </select>
-    <button id="loadBtn">Load</button>
-  </div>
 
-  <div id="map"></div>
+<div id="controls">
+  <label for="jsonFile">Choose marker file:</label>
+  <select id="jsonFile">
+    <option value="markers.json">markers.json</option>
+    <option value="whitsundays.json">whitsundays.json</option>
+    <option value="other.json">other.json</option>
+  </select>
+  <button id="loadBtn" type="button">Load</button>
+  <span id="status" style="margin-left:12px;color:#666"></span>
+</div>
 
-  <div id="table-container">
-    <h3>Markers</h3>
-    <table id="markerTable">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Latitude</th>
-          <th>Longitude</th>
-          <th>URL</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    let map = L.map('map').setView([-20.3, 148.9], 10);
-    L.tileLayer('https://{s}
+<div id="table-container">
+  <h3>Markers</h3>
+  <table id="markerTable">
+    <thead><tr><th>Name</th><th>Lat</th><th>Lng</th><th>URL</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+(() => {
+  const defaultFile = 'markers.json';
+  const select = document.getElementById('jsonFile');
+  const loadBtn = document.getElementById('loadBtn');
+  const status = document.getElementById('status');
+  const tableBody = document.querySelector('#markerTable tbody');
+
+  // Init map
+  const map = L.map('map').setView([-20.2762, 148.7550], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  const markerLayer = L.layerGroup().addTo(map);
+
+  // Helper to show status
+  function setStatus(msg, isError=false) {
+    status.textContent = msg || '';
+    status.style.color = isError ? 'crimson' : '#666';
+    console.log(msg);
+  }
+
+  // Load markers from file (with cache-busting)
+  async function loadMarkers(file) {
+    file = file || defaultFile;
+    setStatus(`Loading ${file}...`);
+    markerLayer.clearLayers();
+    tableBody.innerHTML = '';
+    try {
+      const url = file + '?nocache=' + Date.now();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} - ${url}`);
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error('JSON is not an array of markers');
+      }
+
+      if (data.length === 0) {
+        setStatus('Loaded 0 markers');
+      } else {
+        setStatus(`Loaded ${data.length} markers`);
+      }
+
+      // Add markers and table rows
+      const bounds = [];
+      data.forEach(m => {
+        // defensive: accept url or link field
+        const url = (m.url ?? m.link ?? '').toString();
+        const lat = Number(m.lat);
+        const lng = Number(m.lng);
+        const name = m.name ?? '';
+
+        // skip invalid coords
+        if (!isFinite(lat) || !isFinite(lng)) {
+          console.warn('Skipping marker with invalid coords', m);
+          return;
+        }
+
+        L.marker([lat, lng]).addTo(markerLayer)
+          .bindPopup(`<b>${escapeHtml(name)}</b><br><a href="${escapeHtml(url)}" target="_blank">View</a>`);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${escapeHtml(name)}</td>
+          <td>${lat}</td>
+          <td>${lng}</td>
+          <td>${url ? `<a href="${escapeHtml(url)}" target="_blank">View</a>` : ''}</td>
+        `;
+        tableBody.appendChild(row);
+
+        bounds.push([lat, lng]);
+      });
+
+      // fit map to markers if any
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('Failed to load markers: ' + err.message, true);
+      alert('Error loading markers — check console for details.');
+    }
+  }
+
+  // small helper to avoid XSS when injecting text
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  }
+
+  // wire up load button
+  loadBtn.addEventListener('click', () => {
+    const file = select.value || defaultFile;
+    loadMarkers(file);
+  });
+
+  // also load default on initial display
+  window.addEventListener('DOMContentLoaded', () => loadMarkers(defaultFile));
+
+  // expose for debugging in console if needed
+  window.loadMarkers = loadMarkers;
+})();
+</script>
+</body>
+</html>
