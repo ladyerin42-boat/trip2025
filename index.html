@@ -1,104 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Marker Viewer</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<style>
-  body { margin:0; display:flex; height:100vh; font-family: Arial, sans-serif; }
-  #map { flex: 2; }
-  #sidebar { flex: 1; padding:10px; border-left:1px solid #ccc; overflow-y:auto; }
-  table { width:100%; border-collapse: collapse; margin-top:10px; }
-  th, td { border:1px solid #ccc; padding:5px; text-align:left; }
-</style>
+  <meta charset="UTF-8">
+  <title>Map Viewer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #map {
+      flex: 1;
+      height: 70vh; /* Map takes 70% of screen height */
+      width: 100%;
+    }
+    #controls {
+      padding: 10px;
+      background: #f9f9f9;
+      border-bottom: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
+  <div id="controls">
+    <label for="jsonFile">Choose marker file:</label>
+    <select id="jsonFile">
+      <option value="markers.json">markers.json</option>
+      <option value="markers2.json">markers2.json</option>
+      <option value="markers3.json">markers3.json</option>
+    </select>
+    <button id="loadBtn">Load</button>
+  </div>
 
-<div id="map"></div>
+  <div id="map"></div>
 
-<div id="sidebar">
-  <h3>Marker Collection</h3>
-  <label for="markerSet">Select Marker Set:</label>
-  <select id="markerSet" onchange="loadMarkers()">
-    <option value="markers.json">Default</option>
-    <option value="whitsundays.json">Whitsundays</option>
-    <option value="other.json">Other</option>
-  </select>
+  <div id="table-container">
+    <h3>Markers</h3>
+    <table id="markerTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <h3>Markers Table</h3>
-  <table>
-    <thead>
-      <tr><th>Name</th><th>Lat</th><th>Lng</th><th>URL</th></tr>
-    </thead>
-    <tbody id="markerTable"></tbody>
-  </table>
-</div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-let map = L.map('map').setView([-20.2762,148.7550],10);
-
-// OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
-const markerLayer = L.layerGroup().addTo(map);
-
-// Ship icon
-const shipIcon = L.icon({
-  iconUrl: 'ship.png',
-  iconSize: [32,32],
-  iconAnchor: [16,32],
-  popupAnchor: [0,-32]
-});
-
-let markers = [];
-
-// Load markers from selected file
-async function loadMarkers() {
-  const select = document.getElementById('markerSet');
-  const file = select.value;
-
-  markerLayer.clearLayers();
-  markers = [];
-
-  try {
-    const res = await fetch(file + '?nocache=' + new Date().getTime());
-    markers = await res.json();
-  } catch(e) {
-    alert('Failed to load markers: ' + e);
-    return;
-  }
-
-  markers.forEach(m => {
-    L.marker([m.lat, m.lng], { icon: shipIcon })
-      .addTo(markerLayer)
-      .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
-  });
-
-  refreshTable();
-}
-
-// Update sidebar table
-function refreshTable() {
-  const tbody = document.getElementById('markerTable');
-  tbody.innerHTML = '';
-  markers.forEach(m => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${m.name}</td>
-      <td>${m.lat}</td>
-      <td>${m.lng}</td>
-      <td><a href="${m.url}" target="_blank">View</a></td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// Load default set on page load
-window.onload = loadMarkers;
-</script>
-
-</body>
-</html>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    let map = L.map('map').setView([-20.3, 148.9], 10);
+    L.tileLayer('https://{s}
