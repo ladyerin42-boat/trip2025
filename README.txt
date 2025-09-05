@@ -1,5 +1,20 @@
 ﻿
+# Overview
+
+Add markers to a JSON file and show the markers on a map.
+
+Markers are added using markers-editor.html which runs on the local machine.  
+Edited marker file is temporarily saved to the Downloads folder and must be copied back to the project folder.
+Use Visual Studio to push the updated project to github.
+
+Markers are shown on index.html at https://ladyerin42-boat.github.io/trip2025/index.html?nocache=1
+
+
+
+
 # Adding markers to a map
+
+## Run the editor page locally
 
 In terminal, run the server.py script in the project folder to create a localhost
 
@@ -12,30 +27,27 @@ python -m http.server 8000
 
 Page is visible at http://localhost:8000/marker-editor.html
 
+## Edit the current trip file
 
-In the browser, visit http://localhost:8000/marker-editor.html
+The page loads a default file eg south_2025.json. Edit the 'defaultFile' const to work on a new trip. 
 
-Workflow:
-
-- markers-editor loads the project's markers.json file.
-
-- Add entries. Click the location. Lat / Long are populated. Add the location name and the URL (Facebook post).
+Add entries by clicking on map. Click the location. Lat / Long are populated. Add the location name and the URL (Facebook post).
 Facebook links only work if they are public.
 
-- Save by Clicking the “Download markers.json” button.
-The “Download markers.json” button in marker-editor.html just takes the 
+Save the markers by Clicking the “Download markers.json” button.
+The “Download markers.json” button in marker-editor.html takes the 
 in-memory array of markers and uses JavaScript’s Blob + URL.createObjectURL 
 trick to trigger a download in the browser.
 
-✅ It creates a brand-new file called markers.json.
+✅ It creates a brand-new file (called [defaultFile].json.
 
-✅ The browser saves it into your downloads folder (or wherever your browser normally saves files).
+✅ The browser saves it into the downloads folder.
 
-❌ It does not overwrite the original markers.json sitting in your project folder (or on GitHub).
+❌ It does not overwrite the original json sitting in your project folder (or on GitHub).
 
 After downloading, you still need to:
 
-✅ Manually copy the new markers.json into your project folder (replacing the old one).
+✅ Manually copy the new json file into your project folder (replacing the old one).
 
 ✅ Commit and push it to GitHub so Pages can serve the updated markers.
 To Add a Marker:

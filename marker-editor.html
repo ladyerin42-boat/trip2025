@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Marker Editor</title>
+  <title>Lady Erin - Trip Marker Editor</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -75,12 +75,28 @@
     let markers = [];
     let tableBody = document.querySelector('#markerTable tbody');
 
-    // Load existing markers.json
-    fetch('markers.json')
+    // Custom ship marker icon
+    const shipIcon = L.icon({
+      iconUrl: 'edit.png',  // <- put your PNG file here
+      iconSize: [32, 32],   // size of the icon
+      iconAnchor: [16, 32], // point of the icon which corresponds to marker's location
+      popupAnchor: [0, -32] // point from which the popup should open
+    });
+
+    // The file to be updated
+    const defaultFile = 'south_2025.json';
+
+    // Load the current trip JSON file
+    fetch(defaultFile)
       .then(response => response.json())
       .then(data => {
         markers = data;
         renderMarkers();
+
+        if (markers.length > 0) {
+          const last = markers[markers.length - 1];
+          map.setView([last.lat, last.lng], 13);
+        }
       });
 
     // Add marker on form submit
@@ -94,6 +110,7 @@
       let newMarker = { name, lat, lng, url };
       markers.push(newMarker);
       renderMarkers();
+      map.setView([lat, lng], 13);
       e.target.reset();
     });
 
@@ -111,8 +128,8 @@
       });
 
       markers.forEach((m, index) => {
-        // Add to map
-        L.marker([m.lat, m.lng])
+        // Add to map with custom icon
+        L.marker([m.lat, m.lng], { icon: shipIcon })
           .addTo(map)
           .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
 
@@ -133,6 +150,10 @@
     function deleteMarker(index) {
       markers.splice(index, 1);
       renderMarkers();
+      if (markers.length > 0) {
+        const last = markers[markers.length - 1];
+        map.setView([last.lat, last.lng], 13);
+      }
     }
     window.deleteMarker = deleteMarker;
 
@@ -142,7 +163,7 @@
       let url = URL.createObjectURL(blob);
       let a = document.createElement('a');
       a.href = url;
-      a.download = 'markers.json';
+      a.download = defaultFile;
       a.click();
       URL.revokeObjectURL(url);
     });
