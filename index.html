@@ -111,12 +111,16 @@
         L.marker([lat, lng], { icon: shipIcon }).addTo(markerLayer)
           .bindPopup(`<b>${escapeHtml(name)}</b><br><a href="${escapeHtml(url)}" target="_blank">View</a>`);
 
+        const displayUrl = url && url.trim() !== '' 
+                           ? `<a href="${escapeHtml(url)}" target="_blank">View</a>` 
+                           : 'No link';
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${escapeHtml(name)}</td>
           <td>${lat}</td>
           <td>${lng}</td>
-          <td>${url ? `<a href="${escapeHtml(url)}" target="_blank">View</a>` : ''}</td>
+          <td>${displayUrl}</td>
         `;
         tableBody.appendChild(row);
         bounds.push([lat, lng]);
