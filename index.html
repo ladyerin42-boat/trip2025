@@ -88,49 +88,57 @@
     console.log(msg);
   }
 
-  async function loadMarkers(file) {
-    file = file || defaultFile;
-    setStatus(`Loading ${file}...`);
-    markerLayer.clearLayers();
-    tableBody.innerHTML = '';
-    try {
-      const url = file + '?nocache=' + Date.now();
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} - ${url}`);
-      const data = await res.json();
-      if (!Array.isArray(data)) throw new Error('JSON is not an array of markers');
-      setStatus(`Loaded ${data.length} markers`);
-      const bounds = [];
-      data.forEach(m => {
-        const url = (m.url ?? m.link ?? '').toString();
-        const lat = Number(m.lat);
-        const lng = Number(m.lng);
-        const name = m.name ?? '';
-        if (!isFinite(lat) || !isFinite(lng)) return;
+ async function loadMarkers(file) {
+  file = file || defaultFile;
+  setStatus(`Loading ${file}...`);
+  markerLayer.clearLayers();
+  tableBody.innerHTML = '';
 
-        L.marker([lat, lng], { icon: shipIcon }).addTo(markerLayer)
-          .bindPopup(`<b>${escapeHtml(name)}</b><br><a href="${escapeHtml(url)}" target="_blank">View</a>`);
+  try {
+    const url = file + '?nocache=' + Date.now();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} - ${url}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('JSON is not an array of markers');
 
-        const displayUrl = url && url.trim() !== '' 
-                           ? `<a href="${escapeHtml(url)}" target="_blank">View</a>` 
-                           : 'No link';
+    setStatus(`Loaded ${data.length} markers`);
+    const bounds = [];
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${escapeHtml(name)}</td>
-          <td>${lat}</td>
-          <td>${lng}</td>
-          <td>${displayUrl}</td>
-        `;
-        tableBody.appendChild(row);
-        bounds.push([lat, lng]);
-      });
-      if (bounds.length) map.fitBounds(bounds, { padding: [40, 40] });
-    } catch (err) {
-      console.error(err);
-      setStatus('Failed to load markers: ' + err.message, true);
-    }
+    data.forEach(m => {
+      const url = (m.url ?? m.link ?? '').toString();
+      const lat = Number(m.lat);
+      const lng = Number(m.lng);
+      const name = m.name ?? '';
+      if (!isFinite(lat) || !isFinite(lng)) return;
+
+      // Decide what to show for empty URLs
+      const displayUrl = url.trim() !== '' 
+                         ? `<a href="${escapeHtml(url)}" target="_blank">View</a>` 
+                         : 'No link';
+
+      // Add marker with popup respecting empty URL
+      L.marker([lat, lng], { icon: shipIcon }).addTo(markerLayer)
+        .bindPopup(`<b>${escapeHtml(name)}</b><br>${displayUrl}`);
+
+      // Add row to table
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${escapeHtml(name)}</td>
+        <td>${lat}</td>
+        <td>${lng}</td>
+        <td>${displayUrl}</td>
+      `;
+      tableBody.appendChild(row);
+
+      bounds.push([lat, lng]);
+    });
+
+    if (bounds.length) map.fitBounds(bounds, { padding: [40, 40] });
+  } catch (err) {
+    console.error(err);
+    setStatus('Failed to load markers: ' + err.message, true);
   }
+}
 
   function escapeHtml(s) {
     if (!s) return '';

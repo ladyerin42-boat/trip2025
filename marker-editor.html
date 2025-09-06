@@ -114,7 +114,6 @@
       document.getElementById('lng').value = e.latlng.lng.toFixed(6);
     });
 
-    // Render markers on map and in table
     function renderMarkers() {
       tableBody.innerHTML = '';
       map.eachLayer(layer => {
@@ -122,16 +121,21 @@
       });
 
       markers.forEach((m, index) => {
+        const url = (m.url ?? '').toString();
+        const displayUrl = url.trim() !== '' ? `<a href="${url}" target="_blank">View</a>` : 'No link';
+
+        // Marker popup
         L.marker([m.lat, m.lng], { icon: shipIcon })
           .addTo(map)
-          .bindPopup(`<b>${m.name}</b><br><a href="${m.url}" target="_blank">View</a>`);
+          .bindPopup(`<b>${m.name}</b><br>${displayUrl}`);
 
+        // Table row
         let row = document.createElement('tr');
         row.innerHTML = `
           <td>${m.name}</td>
           <td>${m.lat}</td>
           <td>${m.lng}</td>
-          <td><a href="${m.url}" target="_blank">View</a></td>
+          <td>${displayUrl}</td>
           <td><button class="btn btn-sm btn-danger" onclick="deleteMarker(${index})">X</button></td>
         `;
         tableBody.appendChild(row);
