@@ -105,7 +105,7 @@
     "name": "Cape Upstart",
     "lat": -19.72405,
     "lng": 147.729921,
-    "url": " "
+    "url": "https://www.facebook.com/share/v/1A3d1g9VSd/"
   },
   {
     "name": "Bona Bay, Gloucester Island",
@@ -114,9 +114,16 @@
     "url": "https://www.facebook.com/share/p/19pYeDXYmo/"
   },
   {
+    "name": "Bona Bay, Gloucester Island",
+    "lat": -20.035471,
+    "lng": 148.441932,
+    "url": "https://www.facebook.com/share/v/16oHENDd3n/"
+  }
+  {
     "name": "Jonah Bay",
     "lat": -20.089307,
     "lng": 148.528754,
     "url": "https://www.facebook.com/share/v/19pa7RDGa2/"
   }
+
 ]
