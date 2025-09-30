@@ -1,5 +1,8 @@
 # Ignore local config with PAT
 config.js
 
+# Ignore Visual Studio’s temporary .vs folder files
+.vs/
+
 # Ignore README
 README.txt 
